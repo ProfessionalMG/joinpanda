@@ -18,7 +18,7 @@ media
 .idea/**/shelf
 
 # Environments
-.env
+#.env
 .venv
 env/
 venv/
