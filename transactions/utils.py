@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 
 import requests
+from _datetime import timedelta
 from rest_framework.response import Response
 
 from joinpanda.settings import COUNTRY_LAYER_API_KEY
@@ -11,6 +12,23 @@ from transactions.models import Transaction
 
 
 # TODO:Write Tests
+# TODO: Add converted currency to model
+def change_currency(currency, amount):
+    ecb_url = f'https://sdw-wsrest.ecb.europa.eu/service/data/EXR/D.{currency}.EUR.SP00.A'
+    today = datetime.today().date()
+    params = {
+        'startPeriod': today - timedelta(days=100),
+        'endPeriod': today,
+        'format': 'jsondata',
+        'detail': 'dataonly'
+    }
+    api_call = requests.get(ecb_url, params).json()
+    data_sets = api_call['dataSets'][0]['series']['0:0:0:0:0']['observations']
+    last_item = list(data_sets.keys())[-1]
+    ex_rate = data_sets[last_item][0]
+    converted_amount = amount / ex_rate
+
+    return round(converted_amount, 2)
 
 
 def parse_csv(file):
